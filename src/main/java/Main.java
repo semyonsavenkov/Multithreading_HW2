@@ -71,8 +71,4 @@ public class Main {
         return result;
     }
 
-    public static String printNextLine(Map.Entry myEntry) {
-        return null;
-    }
-
 }
