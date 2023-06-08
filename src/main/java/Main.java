@@ -1,5 +1,5 @@
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Main {
 
@@ -37,12 +37,7 @@ public class Main {
             thread.join();
         }
 
-        HashMap sortedMap = new HashMap<>();
-        sizeToFreq.entrySet().stream()
-                .sorted(Map.Entry.<Integer, Integer>comparingByValue().reversed())
-                .forEach(e -> sortedMap.put(e.getKey(), e.getValue()));
-
-        System.out.println(printUserMessage(sortedMap));
+        System.out.println(printUserMessage(sizeToFreq));
     }
 
     public static String generateRoute(String letters, int length) {
@@ -54,21 +49,31 @@ public class Main {
         return route.toString();
     }
 
-    public static String printUserMessage(HashMap<Integer, Integer> sortedMap) {
+    public static String printUserMessage(Map<Integer, Integer> sortedMap) {
 
-        String result = "";
+        AtomicReference<String> result = new AtomicReference<>("");
         String addition = "";
 
-        for (Map.Entry myEntry : sortedMap.entrySet()) {
-            if (result == "") {
-                addition = "Самое частое количество повторений " + myEntry.getKey() +
-                        " (встретилось " + myEntry.getValue() + " раз)" + "\n" + "Другие размеры:" + "\n";
-            } else {
-                addition = "- " + myEntry.getKey() + " (" + myEntry.getValue() + ")" + "\n";
-            }
-            result = result + addition;
-        }
-        return result;
+        Map.Entry<Integer, Integer> max = sizeToFreq
+                .entrySet()
+                .stream()
+                .max(Map.Entry.comparingByValue())
+                .get();
+        addition = "Самое частое количество повторений " + max.getKey() +
+                " (встретилось " + max.getValue() + " раз)" + "\n" + "Другие размеры:" + "\n";
+        result.set(result + addition);
+
+        sizeToFreq
+                .entrySet()
+                .stream()
+                .sorted(Map.Entry.<Integer, Integer>comparingByValue().reversed())
+                .forEach(e -> {
+                    if (e != max) {
+                        result.set(result + "- " + e.getKey() + " (" + e.getValue() + ")" + "\n");
+                    }
+                });
+
+        return result.get();
     }
 
 }
